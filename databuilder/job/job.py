@@ -30,7 +30,7 @@ class DefaultJob(Job):
 
     def __init__(self,
                  conf: ConfigTree,
-                 task: Task,
+                 task: Task = None,
                  publisher: Publisher = NoopPublisher()) -> None:
         self.task = task
         self.conf = conf
@@ -61,11 +61,12 @@ class DefaultJob(Job):
         #  closeable get closed.
         try:
             is_success = True
-            self._init()
-            try:
-                self.task.run()
-            finally:
-                self.task.close()
+            if self.task is not None:
+                self._init()
+                try:
+                    self.task.run()
+                finally:
+                    self.task.close()
 
             self.publisher.init(Scoped.get_scoped_conf(self.conf, self.publisher.get_scope()))
             Job.closer.register(self.publisher.close)
